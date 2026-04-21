@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Real-Time News Detector</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --accent: #6366f1; 
+            --dark-bg: #030712; 
+            --glass: rgba(255, 255, 255, 0.05); 
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background: linear-gradient(135deg, #030712 0%, #1e1b4b 100%);
+            color: #f8fafc; 
+            display: flex; justify-content: center; align-items: center; 
+            min-height: 100vh; margin: 0; 
+        }
+
+        .dashboard { 
+            background: var(--glass); 
+            backdrop-filter: blur(15px);
+            padding: 40px; 
+            border-radius: 28px; 
+            border: 1px solid var(--border);
+            width: 100%; max-width: 600px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        h1 { font-size: 2rem; margin-bottom: 10px; font-weight: 600; }
+        .sub-text { color: #94a3b8; margin-bottom: 30px; font-size: 0.95rem; }
+
+        textarea { 
+            width: 100%; height: 180px; 
+            background: rgba(0, 0, 0, 0.3); 
+            border: 1px solid var(--border); 
+            border-radius: 16px; 
+            color: white; padding: 15px; 
+            font-size: 1rem; margin-bottom: 20px; 
+            box-sizing: border-box; resize: none;
+            transition: border 0.3s ease;
+        }
+
+        textarea:focus { border-color: var(--accent); outline: none; }
+
+        .btn { 
+            background: var(--accent); color: white; border: none; 
+            padding: 15px 30px; border-radius: 12px; 
+            font-weight: 600; cursor: pointer; width: 100%;
+            transition: transform 0.2s ease, background 0.3s ease;
+        }
+
+        .btn:hover { background: #4f46e5; transform: scale(1.02); }
+        .btn:disabled { background: #334155; cursor: not-allowed; }
+
+        #resDiv { 
+            margin-top: 30px; padding: 20px; border-radius: 16px; 
+            display: none; font-weight: 600;
+            animation: slideUp 0.4s ease forwards;
+        }
+
+        /* Result Colors */
+        .REAL { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid #10b981; }
+        .FAKE { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid #ef4444; }
+        .UNCERTAIN { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid #f59e0b; }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <h1>AI News Verifier</h1>
+        <p class="sub-text">BCA Final Year Project: Real-Time Fact Checking</p>
+        
+        <textarea id="newsInput" placeholder="Paste the news text here for real-time verification..."></textarea>
+        <button id="checkBtn" class="btn" onclick="verifyNews()">Analyze News</button>
+        
+        <div id="resDiv"></div>
+    </div>
+
+    <script>
+        async function verifyNews() {
+            const text = document.getElementById('newsInput').value;
+            const resDiv = document.getElementById('resDiv');
+            const btn = document.getElementById('checkBtn');
+
+            if(!text.trim()) return alert("Please enter news text!");
+
+            // Loading state
+            btn.disabled = true;
+            btn.innerText = "Analyzing Live Data...";
+            resDiv.style.display = "block";
+            resDiv.className = ""; 
+            resDiv.innerHTML = "Consulting AI Models...";
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ text: text })
+                });
+                
+                const data = await response.json();
+                
+                // Final UI Update
+                resDiv.className = data.result;
+                resDiv.innerHTML = `VERIFICATION: ${data.result}`;
+            } catch (error) {
+                resDiv.innerHTML = "Network Error. Check your console.";
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Analyze News";
+            }
+        }
+    </script>
+</body>
+</html>
